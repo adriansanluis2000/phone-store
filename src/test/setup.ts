@@ -11,6 +11,7 @@ afterEach(() => {
   // Testing Library only cleans up on its own when the test globals are enabled
   cleanup();
   server.resetHandlers();
+  localStorage.clear();
 });
 
 afterAll(() => {

@@ -7,3 +7,4 @@ Every significant decision is recorded as a short ADR, in [Michael Nygard's form
 | [0001](0001-technology-stack.md)             | Technology stack                                | Accepted |
 | [0002](0002-layered-feature-architecture.md) | Layered architecture by feature                 | Accepted |
 | [0003](0003-http-client.md)                  | HTTP client: timeouts, retries and cancellation | Accepted |
+| [0004](0004-client-cache.md)                 | Client cache for API responses                  | Accepted |
