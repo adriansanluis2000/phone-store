@@ -38,7 +38,7 @@ The app runs at <http://localhost:5173>.
 | `npm run typecheck`  | Type-checks the project                                      |
 | `npm run format`     | Formats the code with Prettier                               |
 
-The API runs on a free plan that sleeps when idle, so the first request after a quiet period can take up to a minute.
+The API runs on a free plan that sleeps when idle, so the first request after a quiet period can take a minute or more. After three seconds of waiting, the app tells the user that the server is waking up.
 
 ## Stack
 
