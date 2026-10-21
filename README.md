@@ -4,7 +4,7 @@
 
 Solution to a front-end technical test: a single-page application in React to browse and buy mobile phones, built on top of an existing REST API.
 
-> **Status:** in development. The [milestones](#milestones) show what comes next.
+> **Status:** in development. Release `v0.1.0` delivers the product list; the product detail and the cart come next (see the [milestones](#milestones)).
 
 ## What it does
 
@@ -14,7 +14,7 @@ The statement asks for two views and a shared header:
 - **Product detail.** Two columns: the product image on one side, and its description and actions on the other. The actions let the user choose storage and colour, preselected when there is only one option, and add the product to the cart. A link leads back to the list.
 - **Header.** The app title links to the list, breadcrumbs show where the user is, and the number of items in the cart is shown on the right in every view, persisted across reloads.
 
-API responses are cached in the browser for one hour and fetched again once they expire.
+The search term is kept in the URL, as `?q=`, so it survives a visit to a product and a filtered list can be shared ([ADR 0006](docs/adr/0006-search-in-the-url.md)). API responses are cached in the browser for one hour and fetched again once they expire.
 
 ## Getting started
 
@@ -76,13 +76,13 @@ Dependencies point inwards, from `app` to `shared` and from `ui` to `domain`, an
 
 ## Milestones
 
-| Phase | Goal                                                                  | Release  |
-| ----- | --------------------------------------------------------------------- | -------- |
-| 0     | Project setup, CI and API exploration                                 |          |
-| 1     | Data layer: HTTP client, cache and API clients                        |          |
-| 2     | App skeleton: routing, layout and header                              |          |
-| 3     | Product list page                                                     | `v0.1.0` |
-| 4     | Product detail page and cart, with every requirement of the statement | `v0.2.0` |
-| 5     | Production: end-to-end tests, performance and deployment              | `v1.0.0` |
-| 6     | Extra: natural language search powered by Claude                      | `v1.1.0` |
-| 7     | Final review and documentation                                        |          |
+| Phase | Goal                                                                  | Release  | Status |
+| ----- | --------------------------------------------------------------------- | -------- | ------ |
+| 0     | Project setup, CI and API exploration                                 |          | Done   |
+| 1     | Data layer: HTTP client, cache and API clients                        |          | Done   |
+| 2     | App skeleton: routing, layout and header                              |          | Done   |
+| 3     | Product list page                                                     | `v0.1.0` | Done   |
+| 4     | Product detail page and cart, with every requirement of the statement | `v0.2.0` | Next   |
+| 5     | Production: end-to-end tests, performance and deployment              | `v1.0.0` |        |
+| 6     | Extra: natural language search powered by Claude                      | `v1.1.0` |        |
+| 7     | Final review and documentation                                        |          |        |
