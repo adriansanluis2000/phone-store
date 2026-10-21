@@ -1,5 +1,7 @@
 # Phone Store
 
+[![CI](https://github.com/adriansanluis2000/phone-store/actions/workflows/ci.yml/badge.svg)](https://github.com/adriansanluis2000/phone-store/actions/workflows/ci.yml)
+
 Solution to a front-end technical test: a single-page application in React to browse and buy mobile phones, built on top of an existing REST API.
 
 > **Status:** in development. The [milestones](#milestones) show what comes next.
