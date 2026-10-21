@@ -90,4 +90,51 @@ describe('product list', () => {
     expect(screen.getByText('1 de 100 móviles')).toBeInTheDocument();
     expect(requests).toBe(1);
   });
+
+  it('shows the shape of the grid while loading, with the search ready', async () => {
+    let respond = () => undefined;
+    server.use(
+      http.get(
+        `${API_BASE_URL}/api/product`,
+        () =>
+          new Promise<Response>((resolve) => {
+            respond = () => {
+              resolve(HttpResponse.json(products));
+            };
+          }),
+      ),
+    );
+    renderRoute('/');
+
+    expect(await screen.findByText('Cargando productos…')).toBeInTheDocument();
+    expect(searchBox()).toBeEnabled();
+    expect(screen.queryAllByRole('link', { name: /€/ })).toHaveLength(0);
+
+    respond();
+
+    expect(await screen.findByText('100 móviles')).toBeInTheDocument();
+    expect(screen.queryByText('Cargando productos…')).not.toBeInTheDocument();
+  });
+
+  it('offers to clear a search without results', async () => {
+    const user = userEvent.setup();
+    const router = renderRoute('/');
+    await screen.findByText('100 móviles');
+
+    await user.type(searchBox(), 'nokia');
+
+    expect(screen.getByText('0 de 100 móviles')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', {
+        name: 'No hay móviles que coincidan con «nokia»',
+      }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Limpiar búsqueda' }));
+
+    expect(screen.getByText('100 móviles')).toBeInTheDocument();
+    expect(searchBox()).toHaveValue('');
+    expect(searchBox()).toHaveFocus();
+    expect(router.state.location.search).toBe('');
+  });
 });

@@ -1,0 +1,65 @@
+.card {
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.media,
+.brand,
+.model,
+.price {
+  background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-surface) 70%, transparent) 50%,
+      transparent 100%
+    )
+    var(--color-surface-muted);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.media {
+  aspect-ratio: 1;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+.brand,
+.model,
+.price {
+  display: block;
+  height: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.brand {
+  width: 30%;
+}
+
+.model {
+  width: 75%;
+  height: 1rem;
+}
+
+.price {
+  width: 40%;
+  height: 1.125rem;
+  margin-top: var(--space-3);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}

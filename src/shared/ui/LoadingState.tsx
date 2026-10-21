@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import styles from './LoadingState.module.css';
 
 /** Beyond this wait, the API is most likely waking up (docs/api-notes.md). */
 export const SLOW_LOAD_MS = 3000;
 
 interface LoadingStateProps {
-  /** What is loading, shown under the spinner and read by screen readers. */
+  /** What is loading, shown on screen and read by screen readers. */
   label: string;
+  /** A placeholder with the shape of the content, shown instead of a spinner. */
+  children?: ReactNode;
 }
 
-export function LoadingState({ label }: LoadingStateProps) {
+export function LoadingState({ label, children }: LoadingStateProps) {
   const slow = useElapsed(SLOW_LOAD_MS);
 
   return (
-    <div className={styles.loading} role="status">
-      <span className={styles.spinner} aria-hidden="true" />
+    <div
+      className={children ? styles.placeholder : styles.loading}
+      role="status"
+    >
+      {!children && <span className={styles.spinner} aria-hidden="true" />}
       <p className={styles.label}>{label}</p>
       {slow && (
         <p className={styles.hint}>
@@ -22,6 +27,7 @@ export function LoadingState({ label }: LoadingStateProps) {
           un minuto.
         </p>
       )}
+      {children}
     </div>
   );
 }
