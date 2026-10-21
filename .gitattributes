@@ -1,0 +1,2 @@
+# Keep LF line endings on every platform, so Prettier sees the same files locally and in CI
+* text=auto eol=lf
