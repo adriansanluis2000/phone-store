@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Outlet, ScrollRestoration, useLocation } from 'react-router';
+import { CartBadge } from '../features/cart/ui/CartBadge';
+import { Header } from '../shared/ui/Header';
 import styles from './RootLayout.module.css';
 
 export function RootLayout() {
@@ -10,6 +12,7 @@ export function RootLayout() {
       <a href="#main" className={styles.skipLink}>
         Saltar al contenido
       </a>
+      <Header actions={<CartBadge />} />
       <main id="main" tabIndex={-1} className={styles.main}>
         <Outlet />
       </main>

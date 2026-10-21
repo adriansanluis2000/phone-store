@@ -1,0 +1,35 @@
+.cart {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-4) var(--space-1) var(--space-3);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.count {
+  display: inline-block;
+  min-width: 1ch;
+  text-align: center;
+}
+
+.bump {
+  animation: bump var(--duration-base) var(--ease-out);
+}
+
+@keyframes bump {
+  50% {
+    color: var(--color-accent);
+    transform: scale(1.4);
+  }
+}

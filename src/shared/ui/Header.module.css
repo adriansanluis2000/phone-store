@@ -1,0 +1,63 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Mobile: brand and cart on top, breadcrumbs below. Wider: all in one row */
+.inner {
+  display: grid;
+  grid-template-areas:
+    'brand actions'
+    'crumbs crumbs';
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-6);
+  align-items: center;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: var(--space-3) var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  grid-area: brand;
+  gap: var(--space-2);
+  align-items: center;
+  justify-self: start;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  text-decoration: none;
+}
+
+.logo {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--color-accent);
+}
+
+.breadcrumbs {
+  grid-area: crumbs;
+  min-width: 0;
+}
+
+.actions {
+  grid-area: actions;
+  justify-self: end;
+}
+
+@media (min-width: 48rem) {
+  .inner {
+    grid-template-areas: 'brand crumbs actions';
+    grid-template-columns: auto 1fr auto;
+    min-height: 4.5rem;
+  }
+
+  .breadcrumbs {
+    padding-left: var(--space-6);
+    border-left: 1px solid var(--color-border);
+  }
+}
