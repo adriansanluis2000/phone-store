@@ -1,8 +1,18 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach } from 'vitest';
+import { afterAll, afterEach, beforeAll } from 'vitest';
+import { server } from './server';
 
-// Testing Library only cleans up on its own when the test globals are enabled
+beforeAll(() => {
+  server.listen({ onUnhandledFrame: 'error' });
+});
+
 afterEach(() => {
+  // Testing Library only cleans up on its own when the test globals are enabled
   cleanup();
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
 });

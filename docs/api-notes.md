@@ -16,7 +16,9 @@ Since an unknown product answers 500, the app cannot tell a missing product from
 
 ## Cold start
 
-The API runs on a free Render instance that sleeps when idle. The first request took **52.5 s** and **42.5 s** on two occasions. Once awake, the list and every detail answer in under 100 ms. The app has to tell the user that the server is starting, and its timeout has to leave room for a first request of about a minute.
+The API runs on a free Render instance, which [Render](https://render.com/docs/free) shuts down after 15 minutes without traffic and starts again on the next request, a process that "takes about one minute". The first request took **52.5 s** and **42.5 s** on two occasions, and **more than 60 s** on a third, when the client gave up at 60 s and the server answered in 0.24 s moments later. Once awake, the list and every detail answer in under 100 ms.
+
+The wait happens on the server and the app cannot shorten it. It can avoid it with the cache, start requests as early as possible, tell the user that the server is waking up, and keep its timeout above the longest cold start.
 
 ## Headers
 
