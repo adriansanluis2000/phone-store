@@ -54,6 +54,26 @@ The API runs on a free plan that sleeps when idle, so the first request after a 
 
 The reasons behind each choice are recorded as [architecture decision records](docs/adr/).
 
+## Architecture
+
+The code is split by feature and, within each feature, by layer ([ADR 0002](docs/adr/0002-layered-feature-architecture.md)):
+
+```text
+src/
+├── app/                  router, root layout and global styles
+├── pages/                one component per route, composition only
+├── features/
+│   ├── products/
+│   │   ├── domain/          types and pure functions, no React
+│   │   ├── infrastructure/  API client and mappers from the API format
+│   │   ├── application/     loaders and hooks used by the UI
+│   │   └── ui/              components
+│   └── cart/             same layers
+└── shared/               HTTP client, cache, UI primitives and helpers
+```
+
+Dependencies point inwards, from `app` to `shared` and from `ui` to `domain`, and ESLint fails on any import in the opposite direction. The API's misspelt fields and irregular values are absorbed by the mappers and never reach the UI (see the [API notes](docs/api-notes.md)).
+
 ## Milestones
 
 | Phase | Goal                                                                  | Release  |
