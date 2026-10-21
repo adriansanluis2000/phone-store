@@ -1,0 +1,5 @@
+package-lock.json
+
+# Local, unversioned files
+CLAUDE.md
+.claude/
