@@ -89,6 +89,7 @@ export default defineConfig([
   },
   {
     files: ['src/features/*/domain/**/*.ts'],
+    ignores: ['**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

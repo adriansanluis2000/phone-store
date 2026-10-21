@@ -1,0 +1,5 @@
+.count {
+  margin-bottom: calc(var(--space-2) * -1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}

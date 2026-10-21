@@ -1,4 +1,7 @@
-import type { LoaderFunctionArgs } from 'react-router';
+import type {
+  LoaderFunctionArgs,
+  ShouldRevalidateFunctionArgs,
+} from 'react-router';
 import { getProductDetail, getProducts } from '../infrastructure/productApi';
 
 // Loaders start the request and return it unresolved: the page renders at
@@ -6,6 +9,19 @@ import { getProductDetail, getProducts } from '../infrastructure/productApi';
 
 export function productListLoader({ request }: LoaderFunctionArgs) {
   return { products: handledLater(getProducts(request.signal)) };
+}
+
+// Filtering happens in the browser, so a new search term needs no new data.
+// A retry keeps the same URL and still reloads (ADR 0006)
+export function productListShouldRevalidate({
+  currentUrl,
+  nextUrl,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  const searchOnly =
+    currentUrl.pathname === nextUrl.pathname &&
+    currentUrl.search !== nextUrl.search;
+  return searchOnly ? false : defaultShouldRevalidate;
 }
 
 export function productDetailLoader({ params, request }: LoaderFunctionArgs) {

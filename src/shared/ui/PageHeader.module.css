@@ -1,0 +1,18 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.actions {
+  flex: 1 1 18rem;
+  max-width: 24rem;
+}
+
+@media (max-width: 47.99rem) {
+  .actions {
+    max-width: none;
+  }
+}

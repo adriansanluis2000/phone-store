@@ -2,6 +2,7 @@ import type { RouteObject } from 'react-router';
 import {
   productDetailLoader,
   productListLoader,
+  productListShouldRevalidate,
 } from '../features/products/application/productLoaders';
 import { ProductBreadcrumb } from '../features/products/ui/ProductBreadcrumb';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -24,6 +25,7 @@ export const routes: RouteObject[] = [
           {
             index: true,
             loader: productListLoader,
+            shouldRevalidate: productListShouldRevalidate,
             element: <ProductListPage />,
           },
           {
