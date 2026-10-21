@@ -14,7 +14,7 @@ describe('routes', () => {
       await screen.findByRole('heading', { level: 1, name: 'Móviles' }),
     ).toBeInTheDocument();
     expect(
-      await screen.findByRole('link', { name: 'Acer Iconia Talk S' }),
+      await screen.findByRole('link', { name: /Acer Iconia Talk S/ }),
     ).toHaveAttribute('href', '/product/ZmGrkLRPXOTpxsU4jjAcv');
     expect(document.title).toBe('Móviles · Phone Store');
   });
@@ -24,7 +24,7 @@ describe('routes', () => {
     renderRoute('/');
 
     await user.click(
-      await screen.findByRole('link', { name: 'Acer Iconia Tab A700' }),
+      await screen.findByRole('link', { name: /Acer Iconia Tab A700/ }),
     );
 
     expect(
@@ -80,7 +80,7 @@ describe('routes', () => {
     await user.click(screen.getByRole('button', { name: 'Reintentar' }));
 
     expect(
-      await screen.findByRole('link', { name: 'Acer Iconia Talk S' }),
+      await screen.findByRole('link', { name: /Acer Iconia Talk S/ }),
     ).toBeInTheDocument();
   });
 });

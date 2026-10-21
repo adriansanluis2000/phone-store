@@ -1,0 +1,81 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  text-decoration: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card:focus-visible {
+  outline-offset: 3px;
+}
+
+.media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: var(--space-4);
+  background: var(--color-media-plate);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+.brand {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.model {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  letter-spacing: normal;
+}
+
+.price {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Same line height as a price, so every card keeps its last row aligned */
+.noPrice {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: calc(var(--text-lg) * var(--leading-normal));
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 48rem) {
+  .body {
+    padding: var(--space-5) var(--space-5) var(--space-6);
+  }
+
+  .model {
+    font-size: var(--text-lg);
+  }
+}

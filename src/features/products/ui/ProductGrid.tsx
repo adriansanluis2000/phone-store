@@ -1,5 +1,5 @@
-import { Link } from 'react-router';
 import type { Product } from '../domain/product';
+import { ProductCard } from './ProductCard';
 import styles from './ProductGrid.module.css';
 
 interface ProductGridProps {
@@ -11,9 +11,7 @@ export function ProductGrid({ products }: ProductGridProps) {
     <ul className={styles.grid}>
       {products.map((product) => (
         <li key={product.id}>
-          <Link to={`/product/${product.id}`} className={styles.link}>
-            {product.brand} {product.model}
-          </Link>
+          <ProductCard product={product} />
         </li>
       ))}
     </ul>

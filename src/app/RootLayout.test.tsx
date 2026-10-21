@@ -53,7 +53,7 @@ describe('header', () => {
       await screen.findByRole('status', { name: 'Carrito: 1 producto' }),
     ).toBeInTheDocument();
     // A synchronous act() does not commit while the page is still suspended
-    await screen.findByRole('link', { name: 'Acer Iconia Talk S' });
+    await screen.findByRole('link', { name: /Acer Iconia Talk S/ });
 
     act(() => {
       localStorage.setItem('phone-store:cart-count', '3');

@@ -16,6 +16,8 @@
   --color-accent-hover: #1d37ad;
   --color-on-accent: #ffffff;
   --color-accent-soft: #e9edfc;
+  /* Light in both themes: product pictures come on a white background */
+  --color-media-plate: #f4f3ef;
   --color-danger: #b42318;
   --color-focus: var(--color-accent);
 
@@ -82,6 +84,7 @@
     --color-accent-hover: #b0beff;
     --color-on-accent: #0c1445;
     --color-accent-soft: #1f2650;
+    --color-media-plate: #e9e7e1;
     --color-danger: #f97066;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
     --shadow-md: 0 8px 24px -8px rgb(0 0 0 / 60%);
