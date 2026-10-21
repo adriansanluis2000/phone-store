@@ -3,7 +3,9 @@ import './app/styles/tokens.css';
 import './app/styles/global.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
+import { createBrowserRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
+import { routes } from './app/routes';
 
 const container = document.getElementById('root');
 if (!container) {
@@ -12,6 +14,6 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <RouterProvider router={createBrowserRouter(routes)} />
   </StrictMode>,
 );

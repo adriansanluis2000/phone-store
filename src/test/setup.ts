@@ -5,6 +5,8 @@ import { server } from './server';
 
 beforeAll(() => {
   server.listen({ onUnhandledFrame: 'error' });
+  // jsdom does not implement scrolling, which the router restores on navigation
+  window.scrollTo = () => undefined;
 });
 
 afterEach(() => {
