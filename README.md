@@ -27,16 +27,18 @@ npm start
 
 The app runs at <http://localhost:5173>.
 
-| Script               | What it does                                                 |
-| -------------------- | ------------------------------------------------------------ |
-| `npm start`          | Development server with hot reload                           |
-| `npm run build`      | Type-checks and builds for production into `dist/`           |
-| `npm run preview`    | Serves the production build locally                          |
-| `npm test`           | Runs the unit and component tests once                       |
-| `npm run test:watch` | Runs the tests in watch mode                                 |
-| `npm run lint`       | Checks the code with ESLint and the formatting with Prettier |
-| `npm run typecheck`  | Type-checks the project                                      |
-| `npm run format`     | Formats the code with Prettier                               |
+| Script               | What it does                                                                |
+| -------------------- | --------------------------------------------------------------------------- |
+| `npm start`          | Development server with hot reload                                          |
+| `npm run build`      | Type-checks and builds for production into `dist/`                          |
+| `npm run preview`    | Serves the production build locally                                         |
+| `npm test`           | Runs the unit and component tests once                                      |
+| `npm run test:watch` | Runs the tests in watch mode                                                |
+| `npm run test:e2e`   | Runs the end-to-end tests against the production build, with the API mocked |
+| `npm run test:smoke` | Runs a smoke test against the real API, which can take a minute to wake up  |
+| `npm run lint`       | Checks the code with ESLint and the formatting with Prettier                |
+| `npm run typecheck`  | Type-checks the project                                                     |
+| `npm run format`     | Formats the code with Prettier                                              |
 
 The API runs on a free plan that sleeps when idle, so the first request after a quiet period can take a minute or more. After three seconds of waiting, the app tells the user that the server is waking up.
 

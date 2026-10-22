@@ -13,13 +13,7 @@ export default defineConfig([
   globalIgnores(['dist', 'coverage']),
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.strictTypeChecked,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-      jsxA11y.flatConfigs.recommended,
-    ],
+    extends: [js.configs.recommended, tseslint.configs.strictTypeChecked],
     languageOptions: {
       globals: globals.browser,
       parserOptions: {
@@ -27,6 +21,15 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  },
+  {
+    // React rules for the app only: the end-to-end tests are not React code
+    files: ['src/**/*.{ts,tsx}'],
+    extends: [
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+      jsxA11y.flatConfigs.recommended,
+    ],
   },
   {
     // Dependencies point inwards: app → pages → features → shared, and

@@ -12,3 +12,4 @@ Every significant decision is recorded as a short ADR, in [Michael Nygard's form
 | [0006](0006-search-in-the-url.md)                 | Product search in the URL                       | Accepted |
 | [0007](0007-cart-count-in-the-browser.md)         | Cart count kept in the browser                  | Accepted |
 | [0008](0008-features-do-not-import-each-other.md) | Features do not import each other               | Accepted |
+| [0009](0009-end-to-end-tests.md)                  | End-to-end tests                                | Accepted |
