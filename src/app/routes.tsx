@@ -6,9 +6,9 @@ import {
 } from '../features/products/application/productLoaders';
 import { ProductBreadcrumb } from '../features/products/ui/ProductBreadcrumb';
 import { NotFoundPage } from '../pages/NotFoundPage';
-import { ProductDetailPage } from '../pages/ProductDetailPage';
 import { ProductListPage } from '../pages/ProductListPage';
 import type { BreadcrumbHandle } from '../shared/ui/Breadcrumbs';
+import { LoadingState } from '../shared/ui/LoadingState';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
 
@@ -19,8 +19,10 @@ export const routes: RouteObject[] = [
     handle: { breadcrumb: () => 'Inicio' } satisfies BreadcrumbHandle,
     children: [
       {
-        // Errors render inside the layout, which stays in place
+        // Errors render inside the layout, which stays in place, and so does
+        // the wait for the code of a page opened directly
         errorElement: <RouteError />,
+        hydrateFallbackElement: <LoadingState label="Cargando…" />,
         children: [
           {
             index: true,
@@ -31,16 +33,24 @@ export const routes: RouteObject[] = [
           {
             path: 'product/:id',
             loader: productDetailLoader,
-            element: <ProductDetailPage />,
+            // Its code downloads on demand; the loader above starts the data at once
+            lazy: async () => {
+              const { ProductDetailPage } =
+                await import('../pages/ProductDetailPage');
+              return { Component: ProductDetailPage };
+            },
             handle: {
-              breadcrumb: ({ loaderData }) => (
-                <ProductBreadcrumb
-                  product={
-                    (loaderData as ReturnType<typeof productDetailLoader>)
-                      .product
-                  }
-                />
-              ),
+              // The header can render before the loader has run, while the
+              // code of a page opened directly is still on its way
+              breadcrumb: ({ loaderData }) => {
+                const data = loaderData as
+                  ReturnType<typeof productDetailLoader> | undefined;
+                return data ? (
+                  <ProductBreadcrumb product={data.product} />
+                ) : (
+                  'Producto'
+                );
+              },
             } satisfies BreadcrumbHandle,
           },
           {

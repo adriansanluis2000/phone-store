@@ -1,8 +1,9 @@
-import { act, screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { API_BASE_URL } from '../shared/http/apiClient';
+import detail from '../test/fixtures/product-detail.json';
 import products from '../test/fixtures/products.json';
 import { renderRoute } from '../test/renderRoute';
 import { server } from '../test/server';
@@ -136,5 +137,29 @@ describe('product list', () => {
     expect(searchBox()).toHaveValue('');
     expect(searchBox()).toHaveFocus();
     expect(router.state.location.search).toBe('');
+  });
+
+  it('fetches the detail of a product the pointer rests on', async () => {
+    let requests = 0;
+    server.use(
+      http.get(`${API_BASE_URL}/api/product/g18mWn2tnbOq2HJx98pTb`, () => {
+        requests++;
+        return HttpResponse.json(detail);
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/');
+    const card = await screen.findByRole('link', { name: /Iconia Tab A700/ });
+
+    await user.hover(card);
+    await waitFor(() => {
+      expect(requests).toBe(1);
+    });
+
+    await user.click(card);
+    expect(
+      await screen.findByRole('heading', { name: 'Acer Iconia Tab A700' }),
+    ).toBeInTheDocument();
+    expect(requests).toBe(1);
   });
 });

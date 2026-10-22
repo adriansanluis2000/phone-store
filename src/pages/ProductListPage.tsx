@@ -1,4 +1,4 @@
-import { Suspense, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { Await, useLoaderData } from 'react-router';
 import type { productListLoader } from '../features/products/application/productLoaders';
 import { useSearchQuery } from '../features/products/application/useSearchQuery';
@@ -12,6 +12,11 @@ export function ProductListPage() {
   const { products } = useLoaderData<typeof productListLoader>();
   const [query, setQuery] = useSearchQuery();
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // The detail's code downloads in the background once the list is shown
+  useEffect(() => {
+    import('./ProductDetailPage').catch(() => undefined);
+  }, []);
 
   function clearQuery() {
     setQuery('');
