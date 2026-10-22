@@ -1,5 +1,6 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { formatPrice } from '../../../shared/lib/formatPrice';
+import { listSearchState } from '../application/listSearch';
 import type { Product } from '../domain/product';
 import styles from './ProductCard.module.css';
 import { ProductImage } from './ProductImage';
@@ -10,8 +11,14 @@ interface ProductCardProps {
 
 /** The whole card is one link, named by the brand, model and price. */
 export function ProductCard({ product }: ProductCardProps) {
+  const { search } = useLocation();
+
   return (
-    <Link to={`/product/${product.id}`} className={styles.card}>
+    <Link
+      to={`/product/${product.id}`}
+      state={listSearchState(search)}
+      className={styles.card}
+    >
       <div className={styles.media}>
         <ProductImage src={product.imageUrl} alt="" />
       </div>

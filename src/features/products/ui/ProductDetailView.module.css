@@ -1,0 +1,78 @@
+.detail {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.media {
+  display: grid;
+  place-items: center;
+  padding: var(--space-10) var(--space-6);
+  background: var(--color-media-plate);
+  border-radius: var(--radius-lg);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Over the size every page heading gets from the layout */
+.header .title {
+  font-size: clamp(1.875rem, 1.4rem + 1.2vw, 2.25rem);
+}
+
+.price {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.noPrice {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.sectionTitle {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* The picture stays in view while the description scrolls past it */
+@media (min-width: 48rem) {
+  .detail {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+    gap: var(--space-12);
+    align-items: start;
+  }
+
+  .media {
+    position: sticky;
+    top: calc(4.5rem + var(--space-6));
+    aspect-ratio: 1;
+  }
+}

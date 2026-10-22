@@ -28,13 +28,33 @@ function useFocusOnNavigation() {
   const previous = useRef(pathname);
 
   useEffect(() => {
-    if (previous.current === pathname) {
+    const main = document.getElementById('main');
+    if (previous.current === pathname || !main) {
       return;
     }
     previous.current = pathname;
-    const target =
-      document.querySelector<HTMLElement>('main h1') ??
-      document.getElementById('main');
-    target?.focus();
+    const heading = main.querySelector('h1');
+    if (heading) {
+      heading.focus();
+      return;
+    }
+
+    // The heading of a page that is still loading comes later: the focus
+    // waits on the main area and moves to it then, unless the user moved it
+    main.focus();
+    const observer = new MutationObserver(() => {
+      const loaded = main.querySelector('h1');
+      if (!loaded) {
+        return;
+      }
+      observer.disconnect();
+      if (document.activeElement === main) {
+        loaded.focus();
+      }
+    });
+    observer.observe(main, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+    };
   }, [pathname]);
 }
