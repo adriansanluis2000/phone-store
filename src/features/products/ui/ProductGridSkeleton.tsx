@@ -1,3 +1,4 @@
+import { Skeleton } from '../../../shared/ui/Skeleton';
 import gridStyles from './ProductGrid.module.css';
 import styles from './ProductGridSkeleton.module.css';
 
@@ -9,11 +10,11 @@ export function ProductGridSkeleton() {
     <ul className={gridStyles.grid} aria-hidden="true">
       {Array.from({ length: CARDS }, (_, index) => (
         <li key={index} className={styles.card}>
-          <div className={styles.media} />
+          <Skeleton className={styles.media} />
           <div className={styles.body}>
-            <span className={styles.brand} />
-            <span className={styles.model} />
-            <span className={styles.price} />
+            <Skeleton className={styles.brand} />
+            <Skeleton className={styles.model} />
+            <Skeleton className={styles.price} />
           </div>
         </li>
       ))}
