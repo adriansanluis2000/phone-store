@@ -1,7 +1,10 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
+import { API_BASE_URL } from '../shared/http/apiClient';
 import { renderRoute } from '../test/renderRoute';
+import { server } from '../test/server';
 
 const A700 = '/product/g18mWn2tnbOq2HJx98pTb';
 const JADE = '/product/pMZMhe_ZaAPZoaCCtlDrg';
@@ -157,5 +160,149 @@ describe('product detail', () => {
     expect(
       within(color).getByRole('radio', { name: 'Metallic Red' }),
     ).toBeChecked();
+  });
+
+  describe('adding to the cart', () => {
+    function addButton() {
+      return screen.getByRole('button', {
+        name: /Añadir al carrito|Añadiendo/,
+      });
+    }
+
+    // Records the bodies sent to the cart and answers like the real API
+    function recordCart() {
+      const bodies: unknown[] = [];
+      server.use(
+        http.post(`${API_BASE_URL}/api/cart`, async ({ request }) => {
+          bodies.push(await request.json());
+          return HttpResponse.json({ count: 1 });
+        }),
+      );
+      return bodies;
+    }
+
+    it('keeps the button disabled until storage and colour are chosen', async () => {
+      const user = userEvent.setup();
+      renderRoute(A700);
+      await user.click(await screen.findByRole('radio', { name: '64 GB' }));
+
+      expect(addButton()).toBeDisabled();
+      expect(addButton()).toHaveAccessibleDescription(
+        'Elige almacenamiento y color para añadirlo.',
+      );
+
+      await user.click(screen.getByRole('radio', { name: 'Metallic Red' }));
+
+      expect(addButton()).toBeEnabled();
+    });
+
+    it('sends the product and the chosen codes, and counts the item', async () => {
+      const bodies = recordCart();
+      const user = userEvent.setup();
+      renderRoute(A700);
+      await user.click(await screen.findByRole('radio', { name: '64 GB' }));
+      await user.click(screen.getByRole('radio', { name: 'Metallic Red' }));
+
+      await user.click(addButton());
+
+      expect(
+        await screen.findByText(
+          'Añadido al carrito: Iconia Tab A700, 64 GB, Metallic Red.',
+        ),
+      ).toBeInTheDocument();
+      expect(bodies).toEqual([
+        { id: 'g18mWn2tnbOq2HJx98pTb', colorCode: 1001, storageCode: 2002 },
+      ]);
+      expect(
+        screen.getByRole('status', { name: 'Carrito: 1 producto' }),
+      ).toBeInTheDocument();
+    });
+
+    it('keeps the count after a reload and adds to it', async () => {
+      recordCart();
+      const user = userEvent.setup();
+      renderRoute(JADE);
+      await user.click(
+        await screen.findByRole('button', { name: 'Añadir al carrito' }),
+      );
+      await screen.findByRole('status', { name: 'Carrito: 1 producto' });
+
+      // A reload starts the app again on the same storage
+      cleanup();
+      renderRoute(JADE);
+      expect(
+        await screen.findByRole('status', { name: 'Carrito: 1 producto' }),
+      ).toBeInTheDocument();
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Añadir al carrito' }),
+      );
+
+      expect(
+        await screen.findByRole('status', { name: 'Carrito: 2 productos' }),
+      ).toBeInTheDocument();
+    });
+
+    it('sends a single request while adding', async () => {
+      let requests = 0;
+      let respond = () => undefined;
+      server.use(
+        http.post(`${API_BASE_URL}/api/cart`, () => {
+          requests++;
+          return new Promise<Response>((resolve) => {
+            respond = () => {
+              resolve(HttpResponse.json({ count: 1 }));
+            };
+          });
+        }),
+      );
+      const user = userEvent.setup();
+      renderRoute(JADE);
+      const button = await screen.findByRole('button', {
+        name: 'Añadir al carrito',
+      });
+
+      await user.dblClick(button);
+
+      expect(addButton()).toHaveTextContent('Añadiendo…');
+      expect(addButton()).toBeDisabled();
+      respond();
+      expect(
+        await screen.findByText(/Añadido al carrito: Liquid Jade 2/),
+      ).toBeInTheDocument();
+      expect(requests).toBe(1);
+    });
+
+    it('explains a failed add and lets the user try again', async () => {
+      // The last handler added answers first: a failure, then the usual answer
+      recordCart();
+      server.use(
+        http.post(
+          `${API_BASE_URL}/api/cart`,
+          () => new HttpResponse(null, { status: 500 }),
+          { once: true },
+        ),
+      );
+      const user = userEvent.setup();
+      renderRoute(JADE);
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Añadir al carrito' }),
+      );
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'No se ha podido añadir al carrito. Vuelve a intentarlo.',
+      );
+      expect(
+        screen.getByRole('status', { name: 'Carrito: 0 productos' }),
+      ).toBeInTheDocument();
+
+      await user.click(addButton());
+
+      expect(
+        await screen.findByRole('status', { name: 'Carrito: 1 producto' }),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
   });
 });

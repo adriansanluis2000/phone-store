@@ -7,3 +7,51 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
 }
+
+.submit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: stretch;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+}
+
+.hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.confirmation {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+/* Stays in the page while empty, so screen readers announce it when it fills */
+.confirmation:empty {
+  margin-top: calc(var(--space-3) * -1);
+}
+
+.confirmation:not(:empty)::before {
+  margin-right: var(--space-2);
+  color: var(--color-accent);
+  content: '✓' / '';
+}
+
+.error {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-danger);
+}
+
+/* With room, the hint goes next to the button and messages below them */
+@media (min-width: 30rem) {
+  .submit {
+    flex-flow: row wrap;
+    align-items: center;
+  }
+
+  .submit > p:not(.hint) {
+    flex-basis: 100%;
+  }
+}

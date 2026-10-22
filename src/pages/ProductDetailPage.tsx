@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { Await, useLoaderData } from 'react-router';
+import { addItemToCart } from '../features/cart/application/addItemToCart';
 import type { productDetailLoader } from '../features/products/application/productLoaders';
 import { BackToListLink } from '../features/products/ui/BackToListLink';
 import { ProductActions } from '../features/products/ui/ProductActions';
@@ -26,8 +27,18 @@ export function ProductDetailPage() {
               <title>{`${detail.brand} ${detail.model} · Phone Store`}</title>
               <ProductDetailView
                 product={detail}
-                // Keyed by product, so the choices start afresh on another one
-                actions={<ProductActions key={detail.id} product={detail} />}
+                actions={
+                  // Features do not import each other: the page joins the
+                  // product's selection with the cart (ADR 0008). Keyed by
+                  // product, so the choices start afresh on another one
+                  <ProductActions
+                    key={detail.id}
+                    product={detail}
+                    onAdd={(selection) =>
+                      addItemToCart({ productId: detail.id, ...selection })
+                    }
+                  />
+                }
               />
             </>
           )}

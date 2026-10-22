@@ -20,10 +20,6 @@
   color: var(--color-text-muted);
 }
 
-.placeholder .hint {
-  max-width: none;
-}
-
 .placeholder > :last-child {
   margin-top: var(--space-2);
 }
@@ -39,20 +35,6 @@
 
 .label {
   font-weight: var(--weight-medium);
-}
-
-.hint {
-  max-width: 28rem;
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  animation: appear var(--duration-base) var(--ease-out);
-}
-
-@keyframes appear {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
 }
 
 @keyframes spin {

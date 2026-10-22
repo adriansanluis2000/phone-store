@@ -30,7 +30,8 @@ export default defineConfig([
   },
   {
     // Dependencies point inwards: app → pages → features → shared, and
-    // ui → application → infrastructure → domain within a feature (ADR 0002)
+    // ui → application → infrastructure → domain within a feature (ADR 0002).
+    // Features do not import each other (ADR 0008)
     files: ['src/**/*.{ts,tsx}'],
     plugins: { 'import-x': importX },
     settings: {
@@ -81,6 +82,16 @@ export default defineConfig([
               target: `${feature}/ui/**`,
               from: `${feature}/infrastructure/**`,
               message: 'The ui reaches infrastructure through application.',
+            },
+            {
+              target: './src/features/products',
+              from: './src/features/cart',
+              message: 'Features do not import each other: pages compose them.',
+            },
+            {
+              target: './src/features/cart',
+              from: './src/features/products',
+              message: 'Features do not import each other: pages compose them.',
             },
           ],
         },

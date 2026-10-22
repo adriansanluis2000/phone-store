@@ -47,7 +47,7 @@ describe('header', () => {
   });
 
   it('shows the saved cart count and follows changes from other tabs', async () => {
-    localStorage.setItem('phone-store:cart-count', '1');
+    localStorage.setItem('phone-store-cart-count', '1');
     renderRoute('/');
     expect(
       await screen.findByRole('status', { name: 'Carrito: 1 producto' }),
@@ -56,9 +56,9 @@ describe('header', () => {
     await screen.findByRole('link', { name: /Acer Iconia Talk S/ });
 
     act(() => {
-      localStorage.setItem('phone-store:cart-count', '3');
+      localStorage.setItem('phone-store-cart-count', '3');
       window.dispatchEvent(
-        new StorageEvent('storage', { key: 'phone-store:cart-count' }),
+        new StorageEvent('storage', { key: 'phone-store-cart-count' }),
       );
     });
 

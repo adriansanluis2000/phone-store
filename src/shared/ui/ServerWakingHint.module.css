@@ -1,0 +1,13 @@
+.hint {
+  max-width: 28rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  animation: appear var(--duration-base) var(--ease-out);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}

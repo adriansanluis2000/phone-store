@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { LoadingState, SLOW_LOAD_MS } from './LoadingState';
+import { LoadingState } from './LoadingState';
+import { SLOW_LOAD_MS } from './ServerWakingHint';
 
 const WAKING_UP = /el servidor se está despertando/i;
 
