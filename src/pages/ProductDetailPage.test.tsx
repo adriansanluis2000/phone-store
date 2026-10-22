@@ -123,4 +123,39 @@ describe('product detail', () => {
       screen.getByRole('link', { name: 'Ver todos los móviles' }),
     ).toHaveAttribute('href', '/');
   });
+
+  it('shows a single storage and colour already chosen', async () => {
+    renderRoute(JADE);
+
+    expect(await screen.findByRole('radio', { name: '32 GB' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Black' })).toBeChecked();
+  });
+
+  it('leaves the choice to the user when there are several options', async () => {
+    const user = userEvent.setup();
+    renderRoute(A700);
+    const storage = await screen.findByRole('group', {
+      name: 'Almacenamiento',
+    });
+    const color = screen.getByRole('group', { name: 'Color' });
+
+    const radios = [
+      ...within(storage).getAllByRole('radio'),
+      ...within(color).getAllByRole('radio'),
+    ];
+    expect(radios).toHaveLength(5);
+    for (const radio of radios) {
+      expect(radio).not.toBeChecked();
+    }
+
+    await user.click(within(storage).getByRole('radio', { name: '64 GB' }));
+    await user.click(
+      within(color).getByRole('radio', { name: 'Metallic Red' }),
+    );
+
+    expect(within(storage).getByRole('radio', { name: '64 GB' })).toBeChecked();
+    expect(
+      within(color).getByRole('radio', { name: 'Metallic Red' }),
+    ).toBeChecked();
+  });
 });

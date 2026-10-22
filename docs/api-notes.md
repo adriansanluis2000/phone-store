@@ -64,7 +64,16 @@ Irregularities the mappers absorb so they never reach the UI:
 - **Colours:** one option in 47 products, two in 43, and up to 9.
 - **Storages:** one option in 80 products, and up to 3.
 
+Options carry no price. The price belongs to the product and is the same whatever storage or colour is chosen, so the app shows it as it comes; adding to the cart returns no price either.
+
 The other 22 fields (network, SIM, chipset, GPU, memory, connectivity, sensors, release status…) follow the same string-or-list patterns and are not required by the statement.
+
+## Pictures and colours
+
+- **One picture per product.** `imgUrl` is the only image in the detail, the same whatever the colour, and the server has no variants under other paths (`/images/<id>-1000.jpg` and similar answer 404).
+- **50 different colour names**, given as words only: plain ones such as `Black` (62 products) or `White` (30); marketing names such as `Mystic Black`, `Sunshine Yellow` or `lagoon`; the same colour in different case or spelling, such as `black` and `Black`, or `Titanium Gray` and `Titanium Grey`; combinations such as `Black/White` or `Ceramic White and Pearl Red with 3 exchangeable battery covers`; and names that are no colour, `Various` and `Ferrari edition`.
+
+The app shows each colour as an approximate swatch next to its name, from a table that covers every name in the catalogue ([`color-names.json`](../src/test/fixtures/color-names.json)). Combinations show both colours, and an unknown name falls back to its colour word or to a neutral pattern, never to a made-up shade.
 
 ## Cart
 
@@ -81,3 +90,4 @@ So the response does not give a browser the total of the cart. How the app keeps
 | [`products.json`](../src/test/fixtures/products.json)                                   | The full product list                                                                                |
 | [`product-detail.json`](../src/test/fixtures/product-detail.json)                       | Acer Iconia Tab A700: two colours, three storages and a front camera reported as `"Yes"`             |
 | [`product-detail-incomplete.json`](../src/test/fixtures/product-detail-incomplete.json) | Acer Liquid Jade 2: empty price, battery and weight, `"-"` as dimensions, one colour and one storage |
+| [`color-names.json`](../src/test/fixtures/color-names.json)                             | The 50 colour names found across the details of the whole catalogue                                  |
