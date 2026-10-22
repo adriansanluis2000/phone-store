@@ -90,3 +90,12 @@ for (const colorScheme of ['light', 'dark'] as const) {
     expect((await audit()).violations).toEqual([]);
   });
 }
+
+test('is served with the security headers of production', async ({ page }) => {
+  const response = await page.goto('/');
+  const headers = response?.headers() ?? {};
+
+  expect(headers['content-security-policy']).toContain("script-src 'self'");
+  expect(headers['x-content-type-options']).toBe('nosniff');
+  expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+});
