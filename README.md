@@ -6,7 +6,7 @@ Solution to a front-end technical test: a single-page application in React to br
 
 **Live demo:** <https://phone-store-adrian.vercel.app/>
 
-> **Status:** release `v1.0.0` meets [every requirement of the statement](#requirements), is tested end to end and runs in production. A natural language search powered by Claude comes next (see the [milestones](#milestones)).
+> **Status:** release `v1.1.0` meets [every requirement of the statement](#requirements), is tested end to end, runs in production and adds a [smart search](#smart-search) powered by Claude. A final review comes next (see the [milestones](#milestones)).
 
 ## What it does
 
@@ -17,6 +17,10 @@ The statement asks for two views and a shared header:
 - **Header.** The app title links to the list, breadcrumbs show where the user is, and the number of items in the cart is shown on the right in every view, persisted across reloads.
 
 The search term is kept in the URL, as `?q=`, so it survives a visit to a product and a filtered list can be shared ([ADR 0006](docs/adr/0006-search-in-the-url.md)). API responses are cached in the browser for one hour and fetched again once they expire.
+
+### Smart search
+
+Beyond the statement, the list can read a description such as «un Acer por menos de 200 € ordenado por precio». A serverless function asks Claude Haiku 5.5 to turn it into filters (brands, words of the model name, a price range and an order), which the list applies to the catalogue it already has and shows as chips that the user can remove or adjust. What it cannot filter, such as a colour or a capacity, which only the detail of each product knows, it says instead of guessing. The filters are kept in the URL like the search term. The text search of the statement stays the default, and the list goes back to it whenever the smart search is off or fails ([ADR 0011](docs/adr/0011-natural-language-search.md)).
 
 ## Getting started
 
@@ -43,6 +47,8 @@ The app runs at <http://localhost:5173>.
 | `npm run typecheck`     | Type-checks the project                                                     |
 | `npm run format`        | Formats the code with Prettier                                              |
 
+To try the smart search locally, copy [`.env.example`](.env.example) to `.env.local`, which git ignores, and set `ANTHROPIC_API_KEY`; `npm start` also serves the function. To deploy it, set `ANTHROPIC_API_KEY` and `VITE_AI_SEARCH_ENABLED=true` in the environment variables of the Vercel project, and set a spending limit for the key in the Anthropic Console: the function has no rate limit of its own.
+
 The API runs on a free plan that sleeps when idle, so the first request after a quiet period can take a minute or more. After three seconds of waiting, the app tells the user that the server is waking up.
 
 ## Stack
@@ -56,6 +62,7 @@ The API runs on a free plan that sleeps when idle, so the first request after a 
 | Tests      | Vitest, Testing Library and MSW; Playwright and axe end to end                           |
 | Quality    | ESLint, Prettier and the TypeScript compiler, run by GitHub Actions on every push        |
 | Deployment | Vercel, with a strict Content Security Policy                                            |
+| AI         | Claude Haiku 5.5 through the Anthropic SDK, with structured output, in a Vercel Function |
 
 The reasons behind each choice are recorded as [architecture decision records](docs/adr/).
 
@@ -64,6 +71,8 @@ The reasons behind each choice are recorded as [architecture decision records](d
 The code is split by feature and, within each feature, by layer ([ADR 0002](docs/adr/0002-layered-feature-architecture.md)):
 
 ```text
+api/                      Vercel Functions, one entry point per file
+server/                   their logic, such as the AI search
 src/
 ├── app/                  router, root layout and global styles
 ├── pages/                one component per route, composition only
@@ -109,8 +118,8 @@ Every requirement of the statement, where it is met and how it is checked. Unit 
 
 ## Quality
 
-- **Unit and component tests.** 84 tests with Vitest, Testing Library and MSW, which serves the real API responses saved in [`src/test/fixtures`](src/test/fixtures). CI fails below 90% of lines and 85% of branches in the domain, application and shared layers; the whole app is at 96% and 90%.
-- **End-to-end tests.** Playwright runs the whole journey on the production build, on a desktop and an emulated phone, and fails on any error in the browser console ([ADR 0009](docs/adr/0009-end-to-end-tests.md)).
+- **Unit and component tests.** 114 tests with Vitest, Testing Library and MSW, which serves the real API responses saved in [`src/test/fixtures`](src/test/fixtures). The AI search function is tested with the SDK mocked, so no test calls the model. CI fails below 90% of lines and 85% of branches in the domain, application and shared layers; the whole app is at 95% and 92%.
+- **End-to-end tests.** Playwright runs the whole journey on the production build, on a desktop and an emulated phone, and the smart search with its function mocked, and fails on any error in the browser console ([ADR 0009](docs/adr/0009-end-to-end-tests.md)).
 - **Accessibility.** axe finds no WCAG 2.2 AA violation in either view, in the light or the dark theme. Everything works with the keyboard alone: a skip link, visible focus, focus on the page heading after every navigation, and the options as radio groups.
 - **Performance.** The detail page is a chunk of its own, downloaded in the background while the list is shown, and resting the pointer on a card fetches that product before the click. Pictures keep their space while they load, so nothing on the page moves.
 - **Security.** A Content Security Policy without inline scripts or styles, and the usual security headers, also served by `npm run preview` so the end-to-end tests run under them ([ADR 0010](docs/adr/0010-deployment-and-security-headers.md)).
@@ -136,5 +145,5 @@ The points lost in best practices come from the API, which sets a session cookie
 | 3     | Product list page                                                     | `v0.1.0` | Done   |
 | 4     | Product detail page and cart, with every requirement of the statement | `v0.2.0` | Done   |
 | 5     | Production: end-to-end tests, performance and deployment              | `v1.0.0` | Done   |
-| 6     | Extra: natural language search powered by Claude                      | `v1.1.0` | Next   |
+| 6     | Extra: natural language search powered by Claude                      | `v1.1.0` | Done   |
 | 7     | Final review and documentation                                        |          |        |

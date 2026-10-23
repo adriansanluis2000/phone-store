@@ -5,15 +5,30 @@ interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   ref?: Ref<HTMLInputElement>;
+  /** Also shown as the placeholder. */
+  label?: string;
+  maxLength?: number;
+  /** For a search that waits to be sent, such as the smart search. */
+  onSubmit?: () => void;
+  /** While a sent search is on its way. */
+  busy?: boolean;
 }
 
-export function SearchBar({ value, onChange, ref }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChange,
+  ref,
+  label = 'Buscar por marca o modelo',
+  maxLength,
+  onSubmit,
+  busy = false,
+}: SearchBarProps) {
   const id = useId();
 
-  return (
-    <div className={styles.search} role="search">
+  const field = (
+    <>
       <label htmlFor={id} className={styles.label}>
-        Buscar por marca o modelo
+        {label}
       </label>
       <svg
         className={styles.icon}
@@ -33,13 +48,46 @@ export function SearchBar({ value, onChange, ref }: SearchBarProps) {
         className={styles.input}
         type="search"
         value={value}
-        placeholder="Buscar por marca o modelo"
+        placeholder={label}
+        maxLength={maxLength}
         autoComplete="off"
         spellCheck={false}
         onChange={(event) => {
           onChange(event.target.value);
         }}
       />
-    </div>
+    </>
+  );
+
+  if (!onSubmit) {
+    return (
+      <div className={styles.search} role="search">
+        {field}
+      </div>
+    );
+  }
+
+  return (
+    <form
+      className={[styles.search, styles.sendable].join(' ')}
+      role="search"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      {field}
+      <button type="submit" className={styles.submit} disabled={busy}>
+        {busy ? (
+          // Same width as the label, so the field keeps its room for the text
+          <>
+            <span className={styles.spinner} aria-hidden="true" />
+            <span className={styles.label}>Buscando…</span>
+          </>
+        ) : (
+          'Buscar'
+        )}
+      </button>
+    </form>
   );
 }

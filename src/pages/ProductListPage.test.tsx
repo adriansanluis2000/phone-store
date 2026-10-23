@@ -1,7 +1,7 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { API_BASE_URL } from '../shared/http/apiClient';
 import detail from '../test/fixtures/product-detail.json';
 import products from '../test/fixtures/products.json';
@@ -161,5 +161,167 @@ describe('product list', () => {
       await screen.findByRole('heading', { name: 'Acer Iconia Tab A700' }),
     ).toBeInTheDocument();
     expect(requests).toBe(1);
+  });
+});
+
+describe('smart search', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_AI_SEARCH_ENABLED', 'true');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  function smartSearchBox() {
+    return screen.getByRole('searchbox', { name: /Describe lo que buscas/ });
+  }
+
+  // The AI search function, answering the filters a test sets
+  function answerWith(response: Response) {
+    const requests: unknown[] = [];
+    server.use(
+      http.post('/api/ai-search', async ({ request }) => {
+        requests.push(await request.json());
+        return response.clone();
+      }),
+    );
+    return requests;
+  }
+
+  it('is offered only when the build enables it', async () => {
+    vi.stubEnv('VITE_AI_SEARCH_ENABLED', '');
+    renderRoute('/');
+    await screen.findByText('100 móviles');
+
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('turns a description into filters the user can adjust', async () => {
+    const requests = answerWith(
+      HttpResponse.json({
+        keywords: ['liquid'],
+        maxPrice: 150,
+        sort: 'price-asc',
+      }),
+    );
+    const user = userEvent.setup();
+    const router = renderRoute('/');
+    await screen.findByText('100 móviles');
+
+    await user.click(
+      screen.getByRole('switch', { name: 'Búsqueda inteligente' }),
+    );
+    await user.type(
+      smartSearchBox(),
+      'un liquid barato de menos de 150{Enter}',
+    );
+
+    expect(await screen.findByText('22 de 100 móviles')).toBeInTheDocument();
+    expect(requests).toEqual([
+      {
+        query: 'un liquid barato de menos de 150',
+        brands: ['Acer', 'alcatel'],
+        models: expect.arrayContaining(['Liquid Z6 Plus']) as unknown,
+      },
+    ]);
+    expect(cards()[0]).toHaveTextContent('70 €');
+    const params = new URLSearchParams(router.state.location.search);
+    expect(params.get('mode')).toBe('ai');
+    expect(params.getAll('kw')).toEqual(['liquid']);
+    expect(params.get('max')).toBe('150');
+
+    await user.click(screen.getByRole('button', { name: /Cambiar el orden/ }));
+    await waitFor(() => {
+      expect(cards()[0]).toHaveTextContent('150 €');
+    });
+
+    const maxPrice = screen.getByRole('spinbutton', {
+      name: 'Precio máximo en euros',
+    });
+    await user.clear(maxPrice);
+    await user.type(maxPrice, '100');
+    expect(await screen.findByText('12 de 100 móviles')).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Quitar filtro: Palabra «liquid»' }),
+    );
+    expect(await screen.findByText('24 de 100 móviles')).toBeInTheDocument();
+    expect(
+      new URLSearchParams(router.state.location.search).getAll('kw'),
+    ).toEqual([]);
+  });
+
+  it('answers a search already made from the cache', async () => {
+    const requests = answerWith(HttpResponse.json({ keywords: ['liquid'] }));
+    const user = userEvent.setup();
+    renderRoute('/?mode=ai');
+    await screen.findByText('100 móviles');
+
+    await user.type(smartSearchBox(), 'liquid{Enter}');
+    await screen.findByText('47 de 100 móviles');
+    await user.click(
+      screen.getByRole('button', { name: 'Quitar filtro: Palabra «liquid»' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Buscar' }));
+
+    expect(await screen.findByText('47 de 100 móviles')).toBeInTheDocument();
+    expect(requests).toHaveLength(1);
+  });
+
+  it('restores the filters from the URL without asking again', async () => {
+    renderRoute('/?mode=ai&q=liquid%20barato&kw=liquid&max=150&sort=price-asc');
+
+    expect(await screen.findByText('22 de 100 móviles')).toBeInTheDocument();
+    expect(smartSearchBox()).toHaveValue('liquid barato');
+    expect(
+      screen.getByRole('list', { name: 'Hemos entendido:' }),
+    ).toBeVisible();
+  });
+
+  it('says what it cannot filter, also after a visit to a product', async () => {
+    answerWith(
+      HttpResponse.json({
+        brands: ['Acer'],
+        maxPrice: 250,
+        unsupported: ['azul', '8 GB'],
+      }),
+    );
+    const user = userEvent.setup();
+    renderRoute('/?mode=ai');
+    await screen.findByText('100 móviles');
+
+    await user.type(smartSearchBox(), 'un acer azul de 8 GB{Enter}');
+
+    const notice = await screen.findByText(/No podemos filtrar por/);
+    expect(notice).toHaveTextContent(
+      'No podemos filtrar por «azul» y «8 GB»: el listado solo conoce la marca, el modelo y el precio',
+    );
+    expect(screen.getByText('85 de 100 móviles')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('link', { name: /Iconia Tab A700/ }));
+    await user.click(
+      await screen.findByRole('link', { name: 'Volver al listado' }),
+    );
+    expect(await screen.findByText(/No podemos filtrar por/)).toBeVisible();
+  });
+
+  it('falls back to the text search when the smart search fails', async () => {
+    answerWith(HttpResponse.json({ error: 'not configured' }, { status: 503 }));
+    const user = userEvent.setup();
+    renderRoute('/?mode=ai');
+    await screen.findByText('100 móviles');
+
+    await user.type(smartSearchBox(), 'jade{Enter}');
+
+    expect(
+      await screen.findByText(/La búsqueda inteligente no está disponible/),
+    ).toBeInTheDocument();
+    // The switch turns off once the URL leaves the smart search
+    expect(
+      await screen.findByRole('switch', { checked: false }),
+    ).toBeInTheDocument();
+    expect(searchBox()).toHaveValue('jade');
+    expect(screen.getByText('5 de 100 móviles')).toBeInTheDocument();
   });
 });

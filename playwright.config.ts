@@ -41,5 +41,7 @@ export default defineConfig({
     url: ORIGIN,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // With the smart search, whose function each test mocks (ADR 0011)
+    env: { VITE_AI_SEARCH_ENABLED: 'true' },
   },
 });

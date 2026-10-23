@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SMART_SEARCH_MAX_LENGTH } from '../domain/searchStrategy';
 import {
   AiSearchRequestSchema,
   AiSearchResponseSchema,
@@ -12,6 +13,10 @@ const REQUEST = {
 };
 
 describe('AI search contract', () => {
+  it('accepts as long a search as the search box lets through', () => {
+    expect(QUERY_MAX_LENGTH).toBe(SMART_SEARCH_MAX_LENGTH);
+  });
+
   it('takes a search with its catalogue, trimmed', () => {
     expect(AiSearchRequestSchema.parse(REQUEST)).toEqual({
       ...REQUEST,

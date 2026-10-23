@@ -24,6 +24,9 @@ export type SearchStrategy =
       ) => Promise<SearchInterpretation>;
     };
 
+/** The longest search the smart search reads; the search box stops there. */
+export const SMART_SEARCH_MAX_LENGTH = 200;
+
 /** The search of the statement: every word typed, in the brand and model. */
 export const textSearch = {
   live: true,
