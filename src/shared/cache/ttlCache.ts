@@ -41,6 +41,11 @@ export class TtlCache {
     this.#purge();
   }
 
+  /** Returns the fresh value stored for `key`, if any, without fetching. */
+  peek(key: string): unknown {
+    return this.#read(this.#prefix + key)?.value;
+  }
+
   /**
    * Returns the fresh value stored for `key`, or fetches and stores it. When
    * `signal` aborts, only this call rejects: the shared fetch goes on and

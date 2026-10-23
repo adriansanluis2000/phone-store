@@ -76,6 +76,17 @@ describe('TtlCache', () => {
     });
   });
 
+  it('peeks at a fresh value only, without fetching', async () => {
+    const cache = createCache();
+    expect(cache.peek('item')).toBeUndefined();
+
+    await cache.getOrFetch('item', () => Promise.resolve('a'));
+    expect(cache.peek('item')).toBe('a');
+
+    vi.advanceTimersByTime(ONE_HOUR_MS);
+    expect(cache.peek('item')).toBeUndefined();
+  });
+
   it('shares one fetch between concurrent requests', async () => {
     const cache = createCache();
     const fetcher = vi.fn(() => Promise.resolve('a'));

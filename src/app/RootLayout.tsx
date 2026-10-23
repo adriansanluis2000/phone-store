@@ -22,7 +22,11 @@ export function RootLayout() {
 }
 
 // After a client navigation, moves the focus to the new page as a full page
-// load would, so that screen readers announce where the user landed
+// load would, so that screen readers announce where the user landed. The focus
+// moves without scrolling: ScrollRestoration places the page, at the top of a
+// new one or where the user left it when going back
+const NO_SCROLL = { preventScroll: true };
+
 function useFocusOnNavigation() {
   const { pathname } = useLocation();
   const previous = useRef(pathname);
@@ -35,13 +39,13 @@ function useFocusOnNavigation() {
     previous.current = pathname;
     const heading = main.querySelector('h1');
     if (heading) {
-      heading.focus();
+      heading.focus(NO_SCROLL);
       return;
     }
 
     // The heading of a page that is still loading comes later: the focus
     // waits on the main area and moves to it then, unless the user moved it
-    main.focus();
+    main.focus(NO_SCROLL);
     const observer = new MutationObserver(() => {
       const loaded = main.querySelector('h1');
       if (!loaded) {
@@ -49,7 +53,7 @@ function useFocusOnNavigation() {
       }
       observer.disconnect();
       if (document.activeElement === main) {
-        loaded.focus();
+        loaded.focus(NO_SCROLL);
       }
     });
     observer.observe(main, { childList: true, subtree: true });

@@ -43,6 +43,28 @@ test('finds a phone, adds it to the cart and keeps the count after a reload', as
   await expect(page.getByText('1 de 100 móviles')).toBeVisible();
 });
 
+test('opens a product at the top and comes back to the same place in the list', async ({
+  page,
+}) => {
+  await page.goto('/');
+  // Far enough down the list to need scrolling on every screen
+  const card = page.getByRole('link', { name: /Iconia Tab A700/ });
+  await card.scrollIntoViewIfNeeded();
+  const listScroll = await page.evaluate(() => window.scrollY);
+  expect(listScroll).toBeGreaterThan(0);
+
+  // Dispatched, since on a phone a locator click scrolls the card again first
+  await card.dispatchEvent('click');
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+  await page.goBack();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Móviles' }),
+  ).toBeFocused();
+  expect(await page.evaluate(() => window.scrollY)).toBe(listScroll);
+});
+
 for (const [width, columns] of [
   [360, 2],
   [768, 3],

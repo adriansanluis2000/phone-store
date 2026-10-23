@@ -6,14 +6,22 @@ import { toProduct, toProductDetail } from './productMapper';
 
 // Responses are cached as received and mapped on every read (ADR 0004)
 
+const PRODUCTS_PATH = '/api/product';
+
 export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
-  const path = '/api/product';
   const products = await apiCache.getOrFetch(
-    `GET ${path}`,
-    () => apiClient.get(path) as Promise<ProductListItemDto[]>,
+    `GET ${PRODUCTS_PATH}`,
+    () => apiClient.get(PRODUCTS_PATH) as Promise<ProductListItemDto[]>,
     signal,
   );
   return products.map(toProduct);
+}
+
+/** The products, only when the cache holds them fresh: never fetches. */
+export function peekProducts(): Product[] | undefined {
+  const products = apiCache.peek(`GET ${PRODUCTS_PATH}`) as
+    ProductListItemDto[] | undefined;
+  return products?.map(toProduct);
 }
 
 export async function getProductDetail(
