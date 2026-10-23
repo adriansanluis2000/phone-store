@@ -14,3 +14,4 @@ Every significant decision is recorded as a short ADR, in [Michael Nygard's form
 | [0008](0008-features-do-not-import-each-other.md) | Features do not import each other               | Accepted |
 | [0009](0009-end-to-end-tests.md)                  | End-to-end tests                                | Accepted |
 | [0010](0010-deployment-and-security-headers.md)   | Deployment and security headers                 | Accepted |
+| [0011](0011-natural-language-search.md)           | Natural language search with Claude             | Accepted |

@@ -1,5 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
+import type { IncomingMessage } from 'node:http';
+import { loadEnv, type Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 interface VercelConfig {
@@ -17,20 +19,72 @@ const productionHeaders = Object.fromEntries(
     .flatMap(({ headers }) => headers.map(({ key, value }) => [key, value])),
 );
 
+// The AI search function, also served by the development server, so that a key
+// in .env.local and `npm start` are enough to try it (ADR 0011)
+function aiSearchRoute(): Plugin {
+  let env: Record<string, string> = {};
+  return {
+    name: 'ai-search-route',
+    apply: 'serve',
+    configResolved(config) {
+      env = loadEnv(config.mode, config.root, '');
+    },
+    configureServer(server) {
+      server.middlewares.use('/api/ai-search', (req, res, next) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end();
+          return;
+        }
+        void (async () => {
+          const { handleAiSearch } = (await server.ssrLoadModule(
+            '/server/aiSearch.ts',
+          )) as typeof import('./server/aiSearch.js');
+          const response = await handleAiSearch(await toRequest(req), env);
+          res.statusCode = response.status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(await response.text());
+        })().catch(next);
+      });
+    },
+  };
+}
+
+async function toRequest(req: IncomingMessage): Promise<Request> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(chunk as Buffer);
+  }
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (typeof value === 'string') {
+      headers.set(name, value);
+    }
+  }
+  return new Request(
+    `http://${req.headers.host ?? 'localhost'}/api/ai-search`,
+    {
+      method: 'POST',
+      headers,
+      body: Buffer.concat(chunks),
+    },
+  );
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), aiSearchRoute()],
   preview: {
     headers: productionHeaders,
   },
   test: {
     environment: 'jsdom',
     // End-to-end tests live in e2e/ and run with Playwright
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['{src,server}/**/*.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+      include: ['{src,server}/**/*.{ts,tsx}'],
+      exclude: ['**/*.test.{ts,tsx}', 'src/test/**'],
       // The layers that hold the logic: falling below these means that a
       // change came without its tests
       thresholds: {
