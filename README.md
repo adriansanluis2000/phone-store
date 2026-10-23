@@ -4,7 +4,7 @@
 
 Solution to a front-end technical test: a single-page application in React to browse and buy mobile phones, built on top of an existing REST API.
 
-**Live demo:** <https://phone-store-murex.vercel.app/>
+**Live demo:** <https://phone-store-adrian.vercel.app/>
 
 > **Status:** release `v1.0.0` meets [every requirement of the statement](#requirements), is tested end to end and runs in production. A natural language search powered by Claude comes next (see the [milestones](#milestones)).
 
