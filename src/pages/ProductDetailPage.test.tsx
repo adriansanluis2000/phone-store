@@ -253,7 +253,7 @@ describe('product detail', () => {
       ).toBeInTheDocument();
     });
 
-    it('sends a single request while adding', async () => {
+    it('sends a single request while adding, keeping the focus on the button', async () => {
       let requests = 0;
       let respond = () => undefined;
       server.use(
@@ -275,12 +275,15 @@ describe('product detail', () => {
       await user.dblClick(button);
 
       expect(addButton()).toHaveTextContent('Añadiendo…');
-      expect(addButton()).toBeDisabled();
+      // Unavailable but still focusable: a disabled button would drop the focus
+      expect(addButton()).toHaveAttribute('aria-disabled', 'true');
+      expect(addButton()).toHaveFocus();
       respond();
       expect(
         await screen.findByText(/Añadido al carrito: Liquid Jade 2/),
       ).toBeInTheDocument();
       expect(requests).toBe(1);
+      expect(addButton()).toHaveFocus();
     });
 
     it('explains a failed add and lets the user try again', async () => {

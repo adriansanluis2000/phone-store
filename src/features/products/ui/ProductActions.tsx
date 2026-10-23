@@ -71,9 +71,12 @@ export function ProductActions({ product, onAdd }: ProductActionsProps) {
         renderBefore={({ name }) => <ColorSwatch name={name} />}
       />
       <div className={styles.submit}>
+        {/* While adding, unavailable but focusable: a disabled button would
+            drop the keyboard focus to the start of the page */}
         <Button
           type="submit"
-          disabled={!complete || adding}
+          disabled={!complete}
+          aria-disabled={adding}
           aria-describedby={complete ? undefined : hintId}
         >
           {adding ? 'Añadiendo…' : 'Añadir al carrito'}
