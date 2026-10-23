@@ -6,7 +6,15 @@ Solution to a front-end technical test: a single-page application in React to br
 
 **Live demo:** <https://phone-store-adrian.vercel.app/>
 
-> **Status:** release `v1.1.0` meets [every requirement of the statement](#requirements), is tested end to end, runs in production and adds a [smart search](#smart-search) powered by Claude. A final review comes next (see the [milestones](#milestones)).
+> **Status:** complete. Release `v1.0.0` meets [every requirement of the statement](#requirements), is tested end to end and runs in production; `v1.1.0` adds a [smart search](#smart-search) powered by Claude (see the [milestones](#milestones)).
+
+<p align="center">
+  <img src="docs/screenshots/list.png" alt="Product list on a desktop, with the search at the top right and four products per row" width="64%">
+  <img src="docs/screenshots/smart-search.png" alt="Smart search on a phone in the dark theme, with the filters it understood as chips" width="22%">
+</p>
+<p align="center">
+  <img src="docs/screenshots/detail.png" alt="Product detail on a desktop: the picture on the left, the description and the storage and colour selectors on the right" width="64%">
+</p>
 
 ## What it does
 
@@ -86,7 +94,74 @@ src/
 └── shared/               HTTP client, cache, UI primitives and helpers
 ```
 
-Dependencies point inwards, from `app` to `shared` and from `ui` to `domain`, and ESLint fails on any import in the opposite direction. The API's misspelt fields and irregular values are absorbed by the mappers and never reach the UI (see the [API notes](docs/api-notes.md)).
+Dependencies point inwards, from `app` to `shared` and from `ui` to `domain`, and ESLint fails on any import in the opposite direction. Features never import each other: pages compose them ([ADR 0008](docs/adr/0008-features-do-not-import-each-other.md)).
+
+```mermaid
+flowchart TB
+  app["app: router and layout"] --> pages["pages: composition"]
+  pages --> ui
+  subgraph feature["each feature: products, cart"]
+    ui --> application
+    ui --> domain
+    application --> domain
+    application --> infrastructure
+    infrastructure --> domain
+  end
+  feature --> shared["shared: HTTP client, cache, UI primitives"]
+```
+
+Route loaders start the requests and the pages render at once, waiting only where they need the data ([ADR 0005](docs/adr/0005-route-data-with-suspense.md)). Every response of the API goes through the cache as it arrives, and is mapped to the domain on every read ([ADR 0004](docs/adr/0004-client-cache.md)):
+
+```mermaid
+sequenceDiagram
+  participant Page as List or detail
+  participant Loader as Route loader
+  participant Cache as TTL cache in localStorage
+  participant API as Products API
+  Page->>Loader: navigation
+  Loader->>Cache: GET /api/product
+  alt stored less than an hour ago
+    Cache-->>Loader: stored response
+  else missing or expired
+    Cache->>API: one request, shared by every caller
+    API-->>Cache: response, stored for an hour
+    Cache-->>Loader: response
+  end
+  Loader-->>Page: products, mapped from the API format
+```
+
+The smart search adds a function on the same domain, so the Claude API key never reaches the browser ([ADR 0011](docs/adr/0011-natural-language-search.md)):
+
+```mermaid
+sequenceDiagram
+  participant List
+  participant Function as /api/ai-search on Vercel
+  participant Claude as Claude Haiku 5.5
+  List->>Function: description, brands and model names
+  Function->>Claude: request with a structured output format
+  Claude-->>Function: filters, and what cannot be filtered
+  Function-->>List: validated filters
+  List->>List: apply them to the catalogue and keep them in the URL
+```
+
+## Decisions and trade-offs
+
+- **Own data layer instead of a data-fetching library.** The statement asks for a client cache, so the HTTP client and the cache are written and tested here, at the cost of more code to maintain than with TanStack Query ([ADR 0003](docs/adr/0003-http-client.md), [ADR 0004](docs/adr/0004-client-cache.md)).
+- **Pages that render before their data.** The API can take a minute to wake up, so the header and the page heading show at once and only the data waits ([ADR 0005](docs/adr/0005-route-data-with-suspense.md)). Going back to the list renders it whole from the cache and returns to where the user left it ([ADR 0012](docs/adr/0012-return-to-the-list-where-the-user-left-it.md)).
+- **The search in the URL**, so it survives a visit to a product and can be shared, replacing the history entry instead of adding one per keystroke ([ADR 0006](docs/adr/0006-search-in-the-url.md)).
+- **The cart count kept in the browser.** The API always answers a count of one, so the app adds them up, persists the total and keeps tabs in step ([ADR 0007](docs/adr/0007-cart-count-in-the-browser.md)).
+- **End-to-end tests against saved responses.** Fast and stable in CI; a change in the real API is caught by the smoke test, run on demand ([ADR 0009](docs/adr/0009-end-to-end-tests.md)).
+- **A strict Content Security Policy**, tested on every push because the preview server sends the same headers as production ([ADR 0010](docs/adr/0010-deployment-and-security-headers.md)).
+- **A smart search that says what it cannot do.** Structured output keeps the answer applicable, and the list states what it cannot filter instead of guessing. It has no rate limit of its own: the spending limit of the key caps the cost ([ADR 0011](docs/adr/0011-natural-language-search.md)).
+
+## API notes
+
+The API was explored with real requests before relying on it; the details are in the [API notes](docs/api-notes.md).
+
+- **Misspelt and irregular fields**, such as `secondaryCmera`, `dimentions`, cameras as a string or a list, empty prices, weights without a unit, and a resolution and a screen size swapped. The mappers absorb them, so they never reach the UI.
+- **The cart always answers a count of one**, since its session cookie never travels with these requests, so the count is added up in the browser.
+- **An unknown product answers 500**, like a server failure, so both show the same error with a way to retry.
+- **The server sleeps when idle** and takes a minute or more to wake up. After three seconds the app says so.
 
 ## Requirements
 
@@ -97,7 +172,7 @@ Every requirement of the statement, where it is met and how it is checked. Unit 
 | R1  | React, written in TypeScript                                                                            | Whole app ([ADR 0001](docs/adr/0001-technology-stack.md))                                                                                                                                     | Type check and build                                                                                                                                                                             |
 | R2  | Single-page application with client routing, no MPA or SSR                                              | [`routes.tsx`](src/app/routes.tsx), React Router in data mode                                                                                                                                 | [`routes.test.tsx`](src/app/routes.test.tsx)                                                                                                                                                     |
 | R3  | `start`, `build`, `test` and `lint` scripts                                                             | [`package.json`](package.json)                                                                                                                                                                | CI                                                                                                                                                                                               |
-| R4  | Public repository grown by milestones                                                                   | This repository, tags `v0.1.0`, `v0.2.0` and `v1.0.0`                                                                                                                                         | Git history                                                                                                                                                                                      |
+| R4  | Public repository grown by milestones                                                                   | This repository, tags `v0.1.0`, `v0.2.0`, `v1.0.0`, `v1.1.0` and `v1.1.1`                                                                                                                     | Git history                                                                                                                                                                                      |
 | R5  | README in the first commit, with how to run it                                                          | This file, since `a3c33e0`                                                                                                                                                                    | Git history                                                                                                                                                                                      |
 | R6  | The list shows every product of the API                                                                 | [`ProductListPage`](src/pages/ProductListPage.tsx)                                                                                                                                            | [`ProductListPage.test.tsx`](src/pages/ProductListPage.test.tsx)                                                                                                                                 |
 | R7  | Real-time filter by brand and model                                                                     | [`filterProducts`](src/features/products/domain/filterProducts.ts), [`SearchBar`](src/features/products/ui/SearchBar.tsx)                                                                     | [`filterProducts.test.ts`](src/features/products/domain/filterProducts.test.ts), [`ProductListPage.test.tsx`](src/pages/ProductListPage.test.tsx)                                                |
@@ -118,22 +193,31 @@ Every requirement of the statement, where it is met and how it is checked. Unit 
 
 ## Quality
 
-- **Unit and component tests.** 114 tests with Vitest, Testing Library and MSW, which serves the real API responses saved in [`src/test/fixtures`](src/test/fixtures). The AI search function is tested with the SDK mocked, so no test calls the model. CI fails below 90% of lines and 85% of branches in the domain, application and shared layers; the whole app is at 95% and 92%.
+- **Unit and component tests.** 114 tests with Vitest, Testing Library and MSW, which serves the real API responses saved in [`src/test/fixtures`](src/test/fixtures). The AI search function is tested with the SDK mocked, so no test calls the model. CI fails below 90% of lines and 85% of branches in the domain, application and shared layers; the whole app is at 96% and 92%.
 - **End-to-end tests.** Playwright runs the whole journey on the production build, on a desktop and an emulated phone, and the smart search with its function mocked, and fails on any error in the browser console ([ADR 0009](docs/adr/0009-end-to-end-tests.md)).
 - **Accessibility.** axe finds no WCAG 2.2 AA violation in either view, in the light or the dark theme. Everything works with the keyboard alone: a skip link, visible focus, focus on the page heading after every navigation, and the options as radio groups.
 - **Performance.** The detail page is a chunk of its own, downloaded in the background while the list is shown, and resting the pointer on a card fetches that product before the click. Pictures keep their space while they load, so nothing on the page moves.
 - **Security.** A Content Security Policy without inline scripts or styles, and the usual security headers, also served by `npm run preview` so the end-to-end tests run under them ([ADR 0010](docs/adr/0010-deployment-and-security-headers.md)).
 
-Lighthouse 13 on the production build:
+Lighthouse 13 on the deployed app:
 
 | Page   | Device  | Performance | Accessibility | Best practices | SEO |
 | ------ | ------- | ----------- | ------------- | -------------- | --- |
-| List   | Mobile  | 95          | 100           | 96             | 100 |
+| List   | Mobile  | 96          | 100           | 96             | 100 |
 | List   | Desktop | 100         | 100           | 96             | 100 |
-| Detail | Mobile  | 94          | 100           | 96             | 100 |
+| Detail | Mobile  | 95          | 100           | 96             | 100 |
 | Detail | Desktop | 100         | 100           | 96             | 100 |
 
 The points lost in best practices come from the API, which sets a session cookie without the `SameSite` attribute.
+
+## Documentation
+
+| Document                                                   | What it holds                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------------- |
+| [Architecture decision records](docs/adr/)                 | Every relevant decision, with its alternatives and consequences |
+| [API notes](docs/api-notes.md)                             | What the real API returns, and how the app deals with it        |
+| [AI-assisted development](docs/ai-assisted-development.md) | How the solution was built with an AI coding agent              |
+| [Next steps](docs/next-steps.md)                           | What was left out on purpose, and why                           |
 
 ## Milestones
 
@@ -146,4 +230,4 @@ The points lost in best practices come from the API, which sets a session cookie
 | 4     | Product detail page and cart, with every requirement of the statement | `v0.2.0` | Done   |
 | 5     | Production: end-to-end tests, performance and deployment              | `v1.0.0` | Done   |
 | 6     | Extra: natural language search powered by Claude                      | `v1.1.0` | Done   |
-| 7     | Final review and documentation                                        |          |        |
+| 7     | Final review and documentation                                        | `v1.1.1` | Done   |
