@@ -1,40 +1,29 @@
-import { Button } from '../../../shared/ui/Button';
-import { EmptyState } from '../../../shared/ui/EmptyState';
-import { filterProducts } from '../domain/filterProducts';
+import type { ReactNode } from 'react';
 import type { Product } from '../domain/product';
+import { applyFilters, type ProductFilters } from '../domain/productFilters';
 import { ProductGrid } from './ProductGrid';
 import styles from './ProductResults.module.css';
 
 interface ProductResultsProps {
   products: Product[];
-  query: string;
-  onClearQuery: () => void;
+  filters: ProductFilters;
+  /** Shown instead of the grid when no product passes the filters. */
+  empty: ReactNode;
 }
 
 export function ProductResults({
   products,
-  query,
-  onClearQuery,
+  filters,
+  empty,
 }: ProductResultsProps) {
-  const results = filterProducts(products, query);
+  const results = applyFilters(products, filters);
 
   return (
     <>
       <p className={styles.count} aria-live="polite">
         {describeCount(results.length, products.length)}
       </p>
-      {results.length > 0 ? (
-        <ProductGrid products={results} />
-      ) : (
-        <EmptyState
-          title={`No hay móviles que coincidan con «${query.trim()}»`}
-          message="Prueba con otra marca o modelo, o revisa cómo lo has escrito."
-        >
-          <Button variant="secondary" onClick={onClearQuery}>
-            Limpiar búsqueda
-          </Button>
-        </EmptyState>
-      )}
+      {results.length > 0 ? <ProductGrid products={results} /> : empty}
     </>
   );
 }

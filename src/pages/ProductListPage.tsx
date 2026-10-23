@@ -2,9 +2,12 @@ import { Suspense, useEffect, useRef } from 'react';
 import { Await, useLoaderData } from 'react-router';
 import type { productListLoader } from '../features/products/application/productLoaders';
 import { useSearchQuery } from '../features/products/application/useSearchQuery';
+import { textSearch } from '../features/products/domain/searchStrategy';
 import { ProductGridSkeleton } from '../features/products/ui/ProductGridSkeleton';
 import { ProductResults } from '../features/products/ui/ProductResults';
 import { SearchBar } from '../features/products/ui/SearchBar';
+import { Button } from '../shared/ui/Button';
+import { EmptyState } from '../shared/ui/EmptyState';
 import { LoadingState } from '../shared/ui/LoadingState';
 import { PageHeader } from '../shared/ui/PageHeader';
 
@@ -40,8 +43,17 @@ export function ProductListPage() {
           {(list) => (
             <ProductResults
               products={list}
-              query={query}
-              onClearQuery={clearQuery}
+              filters={textSearch.interpret(query)}
+              empty={
+                <EmptyState
+                  title={`No hay móviles que coincidan con «${query.trim()}»`}
+                  message="Prueba con otra marca o modelo, o revisa cómo lo has escrito."
+                >
+                  <Button variant="secondary" onClick={clearQuery}>
+                    Limpiar búsqueda
+                  </Button>
+                </EmptyState>
+              }
             />
           )}
         </Await>
