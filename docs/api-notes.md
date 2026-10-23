@@ -71,6 +71,7 @@ The other 22 fields (network, SIM, chipset, GPU, memory, connectivity, sensors, 
 ## Pictures and colours
 
 - **One picture per product.** `imgUrl` is the only image in the detail, the same whatever the colour, and the server has no variants under other paths (`/images/<id>-1000.jpg` and similar answer 404).
+- **Small pictures, in two sizes with the same proportions**: 139 × 184 px for 74 products and 160 × 212 px for the other 26. The app shows them all at the smaller size, which keeps every phone alike and enlarges none.
 - **50 different colour names**, given as words only: plain ones such as `Black` (62 products) or `White` (30); marketing names such as `Mystic Black`, `Sunshine Yellow` or `lagoon`; the same colour in different case or spelling, such as `black` and `Black`, or `Titanium Gray` and `Titanium Grey`; combinations such as `Black/White` or `Ceramic White and Pearl Red with 3 exchangeable battery covers`; and names that are no colour, `Various` and `Ferrari edition`.
 
 The app shows each colour as an approximate swatch next to its name, from a table that covers every name in the catalogue ([`color-names.json`](../src/test/fixtures/color-names.json)). Combinations show both colours, and an unknown name falls back to its colour word or to a neutral pattern, never to a made-up shade.

@@ -9,8 +9,10 @@ interface ProductImageProps {
   eager?: boolean;
 }
 
-// The API serves 160 × 212 px pictures: shown at that size at most, since
-// enlarging them would blur them, and sized in advance so nothing shifts
+// The API serves pictures of 139 × 184 px, and a few of 160 × 212 px with the
+// same proportions: all are shown at the smaller size at most, so that every
+// phone looks alike and none is enlarged into a blur, and the space is kept
+// before they load so nothing shifts
 export function ProductImage({ src, alt, eager = false }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
 
@@ -23,8 +25,8 @@ export function ProductImage({ src, alt, eager = false }: ProductImageProps) {
       className={styles.image}
       src={src}
       alt={alt}
-      width={160}
-      height={212}
+      width={139}
+      height={184}
       loading={eager ? 'eager' : 'lazy'}
       fetchPriority={eager ? 'high' : 'auto'}
       decoding="async"
