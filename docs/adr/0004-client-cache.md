@@ -1,6 +1,6 @@
 # 0004. Client cache for API responses
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [0011](0011-natural-language-search.md)
 - **Date:** 2026-10-21
 
 ## Context

@@ -1,6 +1,6 @@
 # 0005. Route data with loaders and Suspense
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [0012](0012-return-to-the-list-where-the-user-left-it.md)
 - **Date:** 2026-10-21
 
 ## Context
@@ -11,7 +11,6 @@ In data mode, React Router runs the loaders of a route before rendering it. A lo
 
 - **Loaders start the request and return its promise unresolved**, inside an object such as `{ products }`, as React Router documents for streaming data.
 - **Pages render at once.** The layout, the header and the page heading appear immediately. Only the part that needs the data waits, inside `<Suspense>` and `<Await>`, with the loading state as fallback.
-- **The list takes its products straight from the cache when they are fresh**, as a plain value that `<Await>` renders without suspending. The whole list is on screen in the first render, so going back to it restores the scroll position, which a skeleton shorter than the list would cut short.
 - **Components under `<Await>` receive resolved data**, so they are plain components, easy to test with fixtures.
 - **A failed request reaches the route's error boundary**, which renders inside the layout and retries by revalidating the loaders.
 - **Requests carry the loader's `AbortSignal`**, with the cancellation semantics of [ADR 0004](0004-client-cache.md).
@@ -26,5 +25,5 @@ In data mode, React Router runs the loaders of a route before rendering it. A lo
 ## Consequences
 
 - The app shows its structure at once, even while the server wakes up, and each view decides what its loading state looks like.
-- When the cache answers, the list renders at once, while the detail shows its loading state for an instant, since it still receives a new promise.
+- When the cache answers, the loading state lasts an instant, since the page still receives a new promise.
 - A loader also re-runs when the search parameters change. The product list will opt out of that when the search moves to the URL, since filtering happens in the browser.
