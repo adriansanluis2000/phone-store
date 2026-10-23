@@ -1,6 +1,7 @@
 import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
+import { NavigationType } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { API_BASE_URL } from '../shared/http/apiClient';
 import { renderRoute } from '../test/renderRoute';
@@ -67,7 +68,7 @@ describe('product detail', () => {
 
   it('keeps the search on the way back, while Inicio leads to the whole list', async () => {
     const user = userEvent.setup();
-    renderRoute('/?q=jade');
+    const router = renderRoute('/?q=jade');
     await user.click(
       await screen.findByRole('link', { name: /Liquid Jade 2/ }),
     );
@@ -84,6 +85,15 @@ describe('product detail', () => {
         screen.getByRole('navigation', { name: 'Ruta de navegación' }),
       ).getByRole('link', { name: 'Inicio' }),
     ).toHaveAttribute('href', '/');
+
+    // Back in history, as the browser button, so the list keeps its place
+    await user.click(screen.getByRole('link', { name: 'Volver al listado' }));
+    expect(
+      await screen.findByRole('searchbox', {
+        name: 'Buscar por marca o modelo',
+      }),
+    ).toHaveValue('jade');
+    expect(router.state.historyAction).toBe(NavigationType.Pop);
   });
 
   it('leads back to the whole list when opened directly', async () => {

@@ -17,6 +17,7 @@ The statement asks to filter the product list by brand and model in real time, w
 - **Changing the search does not reload the list.** The route opts out of revalidation when only the search parameters change. A retry keeps the same URL, so it still reloads.
 - **The number of results is announced** in a polite live region: "100 móviles", or "3 de 100 móviles" while filtering.
 - **The search box is ready before the data**: it lives outside the suspended part of the page, so the user can type while the server wakes up.
+- **"Volver al listado" goes back in history** when the user came from the list, as the browser button does, so the list returns with its search and where the user left it. A product opened from elsewhere links to the whole list.
 
 ## Alternatives
 
@@ -24,6 +25,7 @@ The statement asks to filter the product list by brand and model in real time, w
 - **Keeping the term in component state.** Simpler, but it is lost when coming back from a product, and the result cannot be shared.
 - **A new history entry per change.** Back would undo the search one letter at a time.
 - **Debouncing the input.** Filtering 100 products takes well under a millisecond, and a delay would go against filtering on every change.
+- **Restoring the scroll position by URL** instead of by history entry. "Volver al listado" could stay a plain link, but the logo and "Inicio" would also reopen the list halfway down.
 - **Fuzzy matching**, with a library such as Fuse.js. It tolerates typos, but adds a dependency and returns results that are harder to predict for short brand and model names.
 
 ## Consequences

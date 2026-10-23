@@ -53,16 +53,22 @@ test('opens a product at the top and comes back to the same place in the list', 
   const listScroll = await page.evaluate(() => window.scrollY);
   expect(listScroll).toBeGreaterThan(0);
 
-  // Dispatched, since on a phone a locator click scrolls the card again first
-  await card.dispatchEvent('click');
-  await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
-  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  // By the link of the page and by the button of the browser
+  for (const goBack of [
+    () => page.getByRole('link', { name: 'Volver al listado' }).click(),
+    () => page.goBack(),
+  ]) {
+    // Dispatched, since on a phone a locator click scrolls the card again first
+    await card.dispatchEvent('click');
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
-  await page.goBack();
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Móviles' }),
-  ).toBeFocused();
-  expect(await page.evaluate(() => window.scrollY)).toBe(listScroll);
+    await goBack();
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Móviles' }),
+    ).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(listScroll);
+  }
 });
 
 for (const [width, columns] of [
